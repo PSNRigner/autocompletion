@@ -5,7 +5,7 @@
 ** Login   <frasse_l@epitech.net>
 ** 
 ** Started on  Thu Jun 30 09:16:21 2016 loic frasse-mathon
-// Last update Thu Jun 30 09:49:05 2016 loic frasse-mathon
+// Last update Thu Jun 30 10:28:42 2016 loic frasse-mathon
 */
 
 #ifndef AUTOCOMPLETION_HH_
@@ -15,7 +15,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <sstream>
 #include <cstdlib>
+#include <algorithm>
 
 namespace	ac
 {
