@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Thu Jun 30 11:00:03 2016 loic frasse-mathon
+// Last update Thu Jun 30 13:44:06 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -88,6 +88,74 @@ static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
     }
 }
 
+static void	remove(std::vector<ac::City *> &choices, const std::string &total)
+{
+  size_t	i;
+  size_t	j = 0;
+  if (choices.size() > 1)
+    {
+      while (j < choices.size())
+	{
+	  std::string tmp = choices[j]->getName();
+	  std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+	  bool			ok = false;
+	  std::istringstream	iss(tmp);
+	  std::string		line;
+	  while (!ok && std::getline(iss, line, ' '))
+	    {
+	      i = 0;
+	      while (i < total.length() && total[i] == line[i])
+		i++;
+	      if (i == total.length())
+		ok = true;
+	    }
+	  if (!ok)
+	    {
+	      std::cerr << total << " " << tmp << " " << total[i] << " " << tmp[i] << std::endl;
+	      std::vector<ac::City *>::iterator it = choices.begin();
+	      std::vector<ac::City *>::iterator it_end = choices.end();
+	      size_t	k = 0;
+	      while (k < j)
+		{
+		  it++;
+		  k++;
+		}
+	      choices.erase(it);
+	      j--;
+	    }
+	  j++;
+	}
+    }
+  if (choices.size() == 1)
+    {
+      /* TODO Check addresses */
+    }
+  else if (choices.empty())
+    {
+      std::cerr << "Unknown address" << std::endl;
+      exit(84);
+    }
+  i++;
+}
+
+static void	run(ac::AutoCompletion &autoCompletion)
+{
+  std::vector<ac::City *>	choices = autoCompletion.getCities();
+  std::string			total;
+  std::string			line;
+  while (true)
+    {
+      /* TODO : Print possible values */
+      if (!std::getline(std::cin, line))
+	return ;
+      std::transform(line.begin(), line.end(), line.begin(), ::tolower);
+      if (line == "abort")
+	exit(0);
+      total.append(line);
+      remove(choices, total);
+    }
+}
+
 int			main(int ac, char **av)
 {
   ac::AutoCompletion	autoCompletion;
@@ -105,5 +173,6 @@ int			main(int ac, char **av)
       add_dictionary(autoCompletion, av[i]);
       i++;
     }
+  run(autoCompletion);
   return (0);
 }
