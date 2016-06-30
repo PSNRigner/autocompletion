@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Thu Jun 30 13:44:06 2016 loic frasse-mathon
+// Last update Thu Jun 30 13:45:23 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -111,7 +111,6 @@ static void	remove(std::vector<ac::City *> &choices, const std::string &total)
 	    }
 	  if (!ok)
 	    {
-	      std::cerr << total << " " << tmp << " " << total[i] << " " << tmp[i] << std::endl;
 	      std::vector<ac::City *>::iterator it = choices.begin();
 	      std::vector<ac::City *>::iterator it_end = choices.end();
 	      size_t	k = 0;
