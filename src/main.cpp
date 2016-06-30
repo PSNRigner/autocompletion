@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Thu Jun 30 10:30:59 2016 loic frasse-mathon
+// Last update Thu Jun 30 11:00:03 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"

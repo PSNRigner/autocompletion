@@ -5,7 +5,7 @@
 ** Login   <frasse_l@epitech.net>
 ** 
 ** Started on  Thu Jun 30 09:16:21 2016 loic frasse-mathon
-// Last update Thu Jun 30 10:28:42 2016 loic frasse-mathon
+// Last update Thu Jun 30 10:57:21 2016 loic frasse-mathon
 */
 
 #ifndef AUTOCOMPLETION_HH_
@@ -40,9 +40,9 @@ namespace	ac
     AutoCompletion();
     ~AutoCompletion();
     void				addAddress(const std::string &, const std::string &);
-    const std::vector<std::string>	&getCities() const;
+    const std::vector<ac::City *>	&getCities() const;
   private:
-    std::vector<std::string>		cities;
+    std::vector<ac::City *>		cities;
   };
 }
 #endif /* !AUTOCOMPLETION_HH_ */

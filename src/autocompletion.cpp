@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:43:32 2016 loic frasse-mathon
-// Last update Thu Jun 30 09:52:42 2016 loic frasse-mathon
+// Last update Thu Jun 30 10:58:15 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -20,12 +20,29 @@ ac::AutoCompletion::~AutoCompletion()
 
 void	ac::AutoCompletion::addAddress(const std::string &name, const std::string &address)
 {
-  (void)name;
-  (void)address;
-  /* TODO */
+  std::string				lower = name;
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::vector<ac::City *>::iterator	it = this->cities.begin();
+  std::vector<ac::City *>::iterator	it_end = this->cities.end();
+  ac::City				*city = NULL;
+
+  while (it != it_end)
+    {
+      std::string tmp = (*it)->getName();
+      std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+      if (tmp == lower)
+	city = (*it);
+      it++;
+    }
+  if (city == NULL)
+    {
+      city = new City(name);
+      this->cities.push_back(city);
+    }
+  city->addAddress(address);
 }
 
-const std::vector<std::string>	&ac::AutoCompletion::getCities() const
+const std::vector<ac::City *>	&ac::AutoCompletion::getCities() const
 {
   return this->cities;
 }
