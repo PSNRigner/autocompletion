@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:43:32 2016 loic frasse-mathon
-// Last update Thu Jun 30 10:58:15 2016 loic frasse-mathon
+// Last update Thu Jun 30 14:08:08 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -66,7 +66,7 @@ const std::string	&ac::City::getName() const
   return this->name;
 }
 
-const std::vector<std::string>	&ac::City::getAddresses() const
+std::vector<std::string>	&ac::City::getAddresses()
 {
   return this->addresses;
 }

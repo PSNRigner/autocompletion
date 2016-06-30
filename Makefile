@@ -5,7 +5,7 @@
 ## Login   <frasse_l@epitech.net>
 ## 
 ## Started on  Thu Jun 30 09:03:28 2016 loic frasse-mathon
-## Last update Thu Jun 30 09:50:04 2016 loic frasse-mathon
+## Last update Thu Jun 30 14:12:27 2016 loic frasse-mathon
 ##
 
 NAME		= autocompletion
@@ -19,7 +19,7 @@ CPP		= g++ -g
 
 RM		= rm -f
 
-CPPFLAGS	= -I ./include -O3 -W -Wall -Werror -Wextra
+CPPFLAGS	= -I ./include -W -Wall -Werror -Wextra -g -O3
 
 all:		$(NAME)
 

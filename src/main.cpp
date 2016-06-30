@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Thu Jun 30 13:45:23 2016 loic frasse-mathon
+// Last update Thu Jun 30 15:35:40 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -88,10 +88,11 @@ static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
     }
 }
 
-static void	remove(std::vector<ac::City *> &choices, const std::string &total)
+static void	remove(std::vector<ac::City *> &choices, const std::string &total, size_t &offset)
 {
-  size_t	i;
+  size_t	i = 0;
   size_t	j = 0;
+  bool		ttt = false;
   if (choices.size() > 1)
     {
       while (j < choices.size())
@@ -101,7 +102,7 @@ static void	remove(std::vector<ac::City *> &choices, const std::string &total)
 	  bool			ok = false;
 	  std::istringstream	iss(tmp);
 	  std::string		line;
-	  while (!ok && std::getline(iss, line, ' '))
+	  while (std::getline(iss, line, ' '))
 	    {
 	      i = 0;
 	      while (i < total.length() && total[i] == line[i])
@@ -109,6 +110,7 @@ static void	remove(std::vector<ac::City *> &choices, const std::string &total)
 	      if (i == total.length())
 		ok = true;
 	    }
+	  ttt = true;
 	  if (!ok)
 	    {
 	      std::vector<ac::City *>::iterator it = choices.begin();
@@ -127,7 +129,74 @@ static void	remove(std::vector<ac::City *> &choices, const std::string &total)
     }
   if (choices.size() == 1)
     {
-      /* TODO Check addresses */
+      if (ttt)
+	offset = total.length();
+      ac::City *city = choices[0];
+      if (city->getAddresses().size() > 1)
+	{
+	  if (offset < total.length() && total[total.length() - 1] >= '1' && total[total.length() - 1] <= '5')
+	    {
+	      char c = total[total.length() - 1] - 1;
+	      while (city->getAddresses().size() != 1 && !city->getAddresses().empty())
+		{
+		  std::vector<std::string>::iterator it = city->getAddresses().begin();
+
+		  if (c == 48)
+		    city->getAddresses().erase(++it);
+		  else
+		    {
+		      c--;
+		      city->getAddresses().erase(it);
+		    }
+		}
+	      if (c != 48)
+		city->getAddresses().clear();
+	    }
+	  else if (offset < total.length())
+	    {
+	      j = 0;
+	      while (j < city->getAddresses().size())
+		{
+		  std::string tmp = city->getAddresses()[j];
+		  std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+		  bool			ok = false;
+		  std::istringstream	iss(tmp);
+		  std::string		line;
+		  while (!ok && std::getline(iss, line, ' '))
+		    {
+		      i = 0;
+		      while (i + offset < total.length() && total[i + offset] == line[i])
+			i++;
+		      if (i + offset == total.length())
+			ok = true;
+		    }
+		  if (!ok)
+		    {
+		      std::vector<std::string>::iterator it = city->getAddresses().begin();
+		      std::vector<std::string>::iterator it_end = city->getAddresses().end();
+		      size_t	k = 0;
+		      while (k < j)
+			{
+			  it++;
+			  k++;
+			}
+		      city->getAddresses().erase(it);
+		      j--;
+		    }
+		  j++;
+		}
+	    }
+	}
+      if (city->getAddresses().size() == 1)
+	{
+	  std::cout << "=> " << city->getName() << ", " << city->getAddresses()[0] << std::endl;
+	  exit(0);
+	}
+      else if (city->getAddresses().empty())
+	{
+	  std::cerr << "Unknown address" << std::endl;
+	  exit(84);
+	}
     }
   else if (choices.empty())
     {
@@ -142,6 +211,7 @@ static void	run(ac::AutoCompletion &autoCompletion)
   std::vector<ac::City *>	choices = autoCompletion.getCities();
   std::string			total;
   std::string			line;
+  size_t			offset = 0;
   while (true)
     {
       /* TODO : Print possible values */
@@ -151,7 +221,7 @@ static void	run(ac::AutoCompletion &autoCompletion)
       if (line == "abort")
 	exit(0);
       total.append(line);
-      remove(choices, total);
+      remove(choices, total, offset);
     }
 }
 
