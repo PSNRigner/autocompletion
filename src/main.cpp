@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Thu Jun 30 10:29:11 2016 loic frasse-mathon
+// Last update Thu Jun 30 10:30:59 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -86,7 +86,6 @@ static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
       else
 	autoCompletion.addAddress(name, address.substr(1, address.length() - 1));
     }
-  /* TODO */
 }
 
 int			main(int ac, char **av)
