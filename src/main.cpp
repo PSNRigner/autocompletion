@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Fri Jul  1 15:36:28 2016 loic frasse-mathon
+// Last update Fri Jul  1 17:25:37 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -49,7 +49,7 @@ static void	bad_arg()
 
 static void	no_address()
 {
-  std::cout << "Unknown address" << std::endl;
+  std::cerr << "Unknown address" << std::endl;
   exit(84);
 }
 
@@ -211,7 +211,7 @@ static bool		my_find(const std::string &string, const std::string &substring, si
 	  j++;
 	  i--;
 	}
-      if (substring[j] == string[i])
+      else if (substring[j] == string[i])
 	{
 	  if (start == std::string::npos)
 	    start = i;
@@ -257,16 +257,28 @@ static std::string	next(const std::string &name, const std::string &line)
   AC_TO_UPPER(sub);
   size_t		j = 0;
   size_t		n = 0;
-  while (j < line.length() && (line[j] == '-' || line[j] == '\'' || line[j] == name[i]))
+  while (j < line.length() && (line[j] == '-' || line[j] == '\'' || line[j] == name[i] || name[i] == '-' || name[i] == '\''))
+    {
+      i++;
+      j++;
+      while (i < name.length() && (name[i] == '-' || name[i] == '\''))
+	{
+	  i++;
+	  n--;
+	}
+      while (j < line.length() && (line[j] == '-' || line[j] == '\''))
+	{
+	  j++;
+	  n++;
+	}
+    }
+  while (j < line.length() && (line[j] == '-' || line[j] == '\''))
     {
       j++;
-      if (line[j] != '-' && line[j] != '\'')
-	i++;
-      else
-	n++;
+      n++;
     }
   sub = sub.substr(0, j);
-  i = name.length() + n;
+  i += n;
   while (i < line.length())
     {
       if (line[i] != '-' && line[i] != '\'')
