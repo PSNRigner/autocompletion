@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Fri Jul  1 10:45:39 2016 loic frasse-mathon
+// Last update Fri Jul  1 11:47:13 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -280,10 +280,120 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
       first = false;
       name = choices[0]->getName();
       AC_TO_UPPER(name);
-      std::cout << "City : " << choices[0]->getName() << std::endl;
+      if (choices[0]->getAddresses().size() > 1)
+	{
+	  size_t			i = 0;
+	  std::map<std::string, int>	map;
+	  while (i < choices[0]->getAddresses().size())
+	    {
+	      std::string		tmp = choices[0]->getAddresses()[i];
+	      AC_TO_UPPER(tmp);
+	      bool			ok = false;
+	      std::istringstream	iss(tmp);
+	      std::string		line;
+	      int			j = 0;
+	      while (std::getline(iss, line, ' '))
+		{
+		  if (j > 1 && line.find(address) == 0)
+		    {
+		      ok = true;
+		      putOrIncrement(map, address.length() == line.length() ? address :
+				     address + (char)std::tolower(line[address.length()]), 1);
+		    }
+		  j++;
+		}
+	      if (!ok)
+		{
+		  removeAt(choices[0]->getAddresses(), i);
+		  i--;
+		}
+	      i++;
+	    }
+	  if (selections.empty())
+	    {
+	      std::vector<std::string> sorted = sort(map);
+	      if (sorted.size() == 1)
+		{
+		  if (name == sorted[0])
+		    {
+		      i = 0;
+		      map.clear();
+		      while (i < choices[0]->getAddresses().size())
+			{
+			  std::string tmp = choices[0]->getAddresses()[i];
+			  AC_TO_LOWER(tmp);
+			  putOrIncrement(map, tmp, 1);
+			  i++;
+			}
+		      std::vector<std::string> sorted2 = sort(map);
+		      i = 0;
+		      while (i < sorted2.size())
+			{
+			  std::string tmp = format(sorted2[i], address);
+			  selections.push_back(tmp);
+			  if (i != 0)
+			    std::cout << " ";
+			  std::cout << "{" << i + 1 << " : " << name << ", " << tmp << "}";
+			  i++;
+			}
+		      std::cout << std::endl;
+		    }
+		  else
+		    {
+		      address = sorted[0];
+		      AC_TO_UPPER(address);
+		      complete(choices, name, address, first, selection);
+		      return ;
+		    }
+		}
+	      else if (sorted.size() > 1)
+		{
+		  std::vector<std::string>::iterator	it = sorted.begin();
+		  std::vector<std::string>::iterator	it_end = sorted.end();
+		  int					j = 0;
+		  while (it != it_end && j < 5)
+		    {
+		      if (j != 0)
+			std::cout << " ";
+		      std::cout << "{" << name << ", " << *it << "}";
+		      j++;
+		      it++;
+		    }
+		  std::cout << std::endl;
+		}
+	    }
+	  else
+	    {
+	      if (selection < 0 || (size_t)selection >= selections.size())
+		no_address();
+	      std::string tmp = selections[selection];
+	      selections.clear();
+	      AC_TO_UPPER(tmp);
+	      address = tmp;
+	      while (choices[0]->getAddresses().size() != 1)
+		{
+		  std::string tmp = choices[0]->getAddresses()[0];
+		  AC_TO_UPPER(tmp);
+		  if (tmp != address)
+		    removeAt(choices[0]->getAddresses(), 0);
+		  else
+		    {
+		      tmp = choices[0]->getAddresses()[1];
+		      AC_TO_UPPER(tmp);
+		      if (tmp != address)
+			removeAt(choices[0]->getAddresses(), 1);
+		    }
+		}
+	    }
+	}
+      if (choices[0]->getAddresses().size() == 0)
+	no_address();
+      if (choices[0]->getAddresses().size() == 1)
+	{
+	  std::cout << "=> " << choices[0]->getName() << ", " << choices[0]->getAddresses()[0] << std::endl;
+	  exit(0);
+	}
     }
-  (void)address;
-  (void)selection;
 }
 
 static void	run(ac::AutoCompletion &autoCompletion)
