@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Fri Jul  1 13:43:21 2016 loic frasse-mathon
+// Last update Fri Jul  1 15:36:28 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -107,13 +107,31 @@ static void	removeAt(std::vector<T> &vector, size_t index)
   vector.erase(it);
 }
 
+static bool	equals(const std::string &str1, const std::string &str2)
+{
+  size_t	i = 0;
+  size_t	j = 0;
+  while (i < str1.length() && j < str2.length())
+    {
+      while (i < str1.length() && (str1[i] == '-' || str1[i] == '\''))
+	i++;
+      while (j < str2.length() && (str2[j] == '-' || str2[j] == '\''))
+	j++;
+      if (i >= str1.length() || j >= str2.length() || str1[i] != str2[j])
+	return false;
+      i++;
+      j++;
+    }
+  return i == str1.length() && j == str2.length();
+}
+
 static void	putOrIncrement(std::map<std::string, int> &map, const std::string &key, int count)
 {
   std::map<std::string, int>::iterator	it = map.begin();
   std::map<std::string, int>::iterator	it_end = map.end();
   while (it != it_end)
     {
-      if (it->first == key)
+      if (equals(it->first, key))
 	{
 	  it->second = count + it->second;
 	  return ;
@@ -146,15 +164,12 @@ static bool	_sort_addresses(std::pair<std::string, int> pair1, std::pair<std::st
       size_t			i = 2;
       while (i < vec1.size() && i < vec2.size())
 	{
-	    std::cout << "ttt " << vec1[i] << " " << vec2[i] << std::endl; /** DEBUG */
 	    if (vec1[i] < vec2[i])
 	      return true;
 	    i++;
 	}
-      std::cout << "vvv" << std::endl; /** DEBUG */
       return false;
     }
-  std::cout << "uuu" << std::endl; /** DEBUG */
   return pair1.second > pair2.second;
 }
 
@@ -180,22 +195,93 @@ static std::vector<std::string>			sort(const std::map<std::string, int> map, boo
   return sorted;
 }
 
+static bool		my_find(const std::string &string, const std::string &substring, size_t &start, size_t &end)
+{
+  size_t		i;
+  size_t		j;
+
+  i = 0;
+  j = 0;
+  start = -1;
+  end = -1;
+  while (i < string.length() && j < substring.length())
+    {
+      if (substring[j] == '-' || substring[j] == '\'')
+	{
+	  j++;
+	  i--;
+	}
+      if (substring[j] == string[i])
+	{
+	  if (start == std::string::npos)
+	    start = i;
+	  j++;
+	}
+      else if (string[i] != '\'' && string[i] != '-')
+	{
+	  start = std::string::npos;
+	  j = 0;
+	}
+      i++;
+    }
+  if (j == substring.length())
+    end = i;
+  if (j == 0 && substring.length() == j)
+    start = 0;
+  return j == substring.length();
+}
+
 static std::string	format(const std::string &string, const std::string &name)
 {
   std::string		tmp = string;
   std::string		tmp2 = name;
   size_t		index;
+  size_t		length;
   AC_TO_LOWER(tmp);
   AC_TO_LOWER(tmp2);
-  while ((index = tmp.find(tmp2)) != std::string::npos)
-    tmp.replace(index, name.length(), name);
+  while (my_find(tmp, tmp2, index, length))
+    {
+      while (index < length)
+	{
+	  tmp[index] = (char)std::toupper(tmp[index]);
+	  index++;
+	}
+    }
   return tmp;
+}
+
+static std::string	next(const std::string &name, const std::string &line)
+{
+  size_t		i = 0;
+  std::string		sub = line;
+  AC_TO_UPPER(sub);
+  size_t		j = 0;
+  size_t		n = 0;
+  while (j < line.length() && (line[j] == '-' || line[j] == '\'' || line[j] == name[i]))
+    {
+      j++;
+      if (line[j] != '-' && line[j] != '\'')
+	i++;
+      else
+	n++;
+    }
+  sub = sub.substr(0, j);
+  i = name.length() + n;
+  while (i < line.length())
+    {
+      if (line[i] != '-' && line[i] != '\'')
+	return sub + (char)std::tolower(line[i]);
+      i++;
+    }
+  return sub;
 }
 
 static void	complete(std::vector<ac::City *> &choices, std::string &name, std::string &address, bool &first,
 			 int selection)
 {
   static	std::vector<std::string> selections;
+  size_t	index;
+  size_t	end;
 
   if (choices.size() > 1)
     {
@@ -210,11 +296,10 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	  std::string		line;
 	  while (std::getline(iss, line, ' '))
 	    {
-	      if (line.find(name) == 0)
+	      if (my_find(line, name, index, end) && index == 0)
 		{
 		  ok = true;
-		  putOrIncrement(map, name.length() == line.length() ? name :
-				 name + (char)std::tolower(line[name.length()]), choices[i]->getAddresses().size());
+		  putOrIncrement(map, next(name, line), choices[i]->getAddresses().size());
 		}
 	    }
 	  if (!ok)
@@ -322,11 +407,10 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	      int			j = 0;
 	      while (std::getline(iss, line, ' '))
 		{
-		  if (j > 1 && line.find(address) == 0)
+		  if (j > 1 && my_find(line, address, index, end) && index == 0)
 		    {
 		      ok = true;
-		      putOrIncrement(map, address.length() == line.length() ? address :
-				     address + (char)std::tolower(line[address.length()]), 1);
+		      putOrIncrement(map, next(address, line), 1);
 		    }
 		  j++;
 		}
