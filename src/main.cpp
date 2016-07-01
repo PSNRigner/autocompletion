@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Fri Jul  1 12:08:17 2016 loic frasse-mathon
+// Last update Fri Jul  1 13:43:21 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -130,7 +130,35 @@ static bool	_sort(std::pair<std::string, int> pair1, std::pair<std::string, int>
   return pair1.second > pair2.second;
 }
 
-static std::vector<std::string>			sort(const std::map<std::string, int> map)
+static bool	_sort_addresses(std::pair<std::string, int> pair1, std::pair<std::string, int> pair2)
+{
+  if (pair1.second == pair2.second)
+    {
+      std::istringstream	iss1(pair1.first);
+      std::istringstream	iss2(pair2.first);
+      std::string		word;
+      std::vector<std::string>	vec1;
+      std::vector<std::string>	vec2;
+      while (std::getline(iss1, word, ' '))
+	vec1.push_back(word);
+      while (std::getline(iss2, word, ' '))
+	vec2.push_back(word);
+      size_t			i = 2;
+      while (i < vec1.size() && i < vec2.size())
+	{
+	    std::cout << "ttt " << vec1[i] << " " << vec2[i] << std::endl; /** DEBUG */
+	    if (vec1[i] < vec2[i])
+	      return true;
+	    i++;
+	}
+      std::cout << "vvv" << std::endl; /** DEBUG */
+      return false;
+    }
+  std::cout << "uuu" << std::endl; /** DEBUG */
+  return pair1.second > pair2.second;
+}
+
+static std::vector<std::string>			sort(const std::map<std::string, int> map, bool first)
 {
   std::vector<std::pair<std::string, int> >	list;
   std::vector<std::string>			sorted;
@@ -141,7 +169,7 @@ static std::vector<std::string>			sort(const std::map<std::string, int> map)
       list.push_back(std::pair<std::string, int>(it->first, it->second));
       it++;
     }
-  std::sort(list.begin(), list.end(), _sort);
+  std::sort(list.begin(), list.end(), first ? _sort : _sort_addresses);
   std::vector<std::pair<std::string, int> >::const_iterator	it2 = list.begin();
   std::vector<std::pair<std::string, int> >::const_iterator	it2_end = list.end();
   while (it2 != it2_end)
@@ -198,7 +226,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	}
       if (selections.empty())
 	{
-	  std::vector<std::string> sorted = sort(map);
+	  std::vector<std::string> sorted = sort(map, true);
 	  if (sorted.size() == 1)
 	    {
 	      if (name == sorted[0])
@@ -212,7 +240,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 		      putOrIncrement(map, tmp, choices[i]->getAddresses().size());
 		      i++;
 		    }
-		  std::vector<std::string> sorted2 = sort(map);
+		  std::vector<std::string> sorted2 = sort(map, true);
 		  i = 0;
 		  while (i < sorted2.size())
 		    {
@@ -311,7 +339,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	    }
 	  if (selections.empty())
 	    {
-	      std::vector<std::string> sorted = sort(map);
+	      std::vector<std::string> sorted = sort(map, true);
 	      if (sorted.size() == 1)
 		{
 		  if (address == sorted[0])
@@ -325,7 +353,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 			  putOrIncrement(map, tmp, 1);
 			  i++;
 			}
-		      std::vector<std::string> sorted2 = sort(map);
+		      std::vector<std::string> sorted2 = sort(map, false);
 		      i = 0;
 		      while (i < sorted2.size())
 			{
