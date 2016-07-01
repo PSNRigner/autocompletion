@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Fri Jul  1 11:47:13 2016 loic frasse-mathon
+// Last update Fri Jul  1 12:08:17 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -314,7 +314,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	      std::vector<std::string> sorted = sort(map);
 	      if (sorted.size() == 1)
 		{
-		  if (name == sorted[0])
+		  if (address == sorted[0])
 		    {
 		      i = 0;
 		      map.clear();
