@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Thu Jun 30 15:35:40 2016 loic frasse-mathon
+// Last update Fri Jul  1 10:45:39 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -27,7 +27,7 @@ static bool	isNumber(const std::string &string)
 static bool	isStreetType(const std::string &arg)
 {
   std::string	string = arg;
-  std::transform(string.begin(), string.end(), string.begin(), ::tolower);
+  AC_TO_LOWER(string);
   return string == "allée" || string == "avenue" || string == "boulevard" || string == "chemin"
     || string == "impasse" || string == "place" || string == "quai" || string == "rue" || string == "square";
 }
@@ -44,6 +44,12 @@ static void	usage()
 static void	bad_arg()
 {
   std::cerr << "Invalid argument" << std::endl;
+  exit(84);
+}
+
+static void	no_address()
+{
+  std::cout << "Unknown address" << std::endl;
   exit(84);
 }
 
@@ -88,140 +94,219 @@ static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
     }
 }
 
-static void	remove(std::vector<ac::City *> &choices, const std::string &total, size_t &offset)
+template<typename T>
+static void	removeAt(std::vector<T> &vector, size_t index)
 {
-  size_t	i = 0;
-  size_t	j = 0;
-  bool		ttt = false;
+  typename std::vector<T>::iterator	it = vector.begin();
+  typename std::vector<T>::iterator	it_end = vector.end();
+  while (it != it_end && index > 0)
+    {
+      it++;
+      index--;
+    }
+  vector.erase(it);
+}
+
+static void	putOrIncrement(std::map<std::string, int> &map, const std::string &key, int count)
+{
+  std::map<std::string, int>::iterator	it = map.begin();
+  std::map<std::string, int>::iterator	it_end = map.end();
+  while (it != it_end)
+    {
+      if (it->first == key)
+	{
+	  it->second = count + it->second;
+	  return ;
+	}
+      it++;
+    }
+  map.insert(std::pair<std::string, int>(key, count));
+}
+
+static bool	_sort(std::pair<std::string, int> pair1, std::pair<std::string, int> pair2)
+{
+  if (pair1.second == pair2.second)
+    return pair1.first < pair2.first;
+  return pair1.second > pair2.second;
+}
+
+static std::vector<std::string>			sort(const std::map<std::string, int> map)
+{
+  std::vector<std::pair<std::string, int> >	list;
+  std::vector<std::string>			sorted;
+  std::map<std::string, int>::const_iterator	it = map.begin();
+  std::map<std::string, int>::const_iterator	it_end = map.end();
+  while (it != it_end)
+    {
+      list.push_back(std::pair<std::string, int>(it->first, it->second));
+      it++;
+    }
+  std::sort(list.begin(), list.end(), _sort);
+  std::vector<std::pair<std::string, int> >::const_iterator	it2 = list.begin();
+  std::vector<std::pair<std::string, int> >::const_iterator	it2_end = list.end();
+  while (it2 != it2_end)
+    {
+      sorted.push_back(it2->first);
+      it2++;
+    }
+  return sorted;
+}
+
+static std::string	format(const std::string &string, const std::string &name)
+{
+  std::string		tmp = string;
+  std::string		tmp2 = name;
+  size_t		index;
+  AC_TO_LOWER(tmp);
+  AC_TO_LOWER(tmp2);
+  while ((index = tmp.find(tmp2)) != std::string::npos)
+    tmp.replace(index, name.length(), name);
+  return tmp;
+}
+
+static void	complete(std::vector<ac::City *> &choices, std::string &name, std::string &address, bool &first,
+			 int selection)
+{
+  static	std::vector<std::string> selections;
+
   if (choices.size() > 1)
     {
-      while (j < choices.size())
+      size_t				i = 0;
+      std::map<std::string, int>	map;
+      while (i < choices.size())
 	{
-	  std::string tmp = choices[j]->getName();
-	  std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+	  std::string		tmp = choices[i]->getName();
+	  AC_TO_UPPER(tmp);
 	  bool			ok = false;
 	  std::istringstream	iss(tmp);
 	  std::string		line;
 	  while (std::getline(iss, line, ' '))
 	    {
-	      i = 0;
-	      while (i < total.length() && total[i] == line[i])
-		i++;
-	      if (i == total.length())
-		ok = true;
+	      if (line.find(name) == 0)
+		{
+		  ok = true;
+		  putOrIncrement(map, name.length() == line.length() ? name :
+				 name + (char)std::tolower(line[name.length()]), choices[i]->getAddresses().size());
+		}
 	    }
-	  ttt = true;
 	  if (!ok)
 	    {
-	      std::vector<ac::City *>::iterator it = choices.begin();
-	      std::vector<ac::City *>::iterator it_end = choices.end();
-	      size_t	k = 0;
-	      while (k < j)
-		{
-		  it++;
-		  k++;
-		}
-	      choices.erase(it);
-	      j--;
+	      removeAt(choices, i);
+	      i--;
 	    }
-	  j++;
+	  i++;
+	}
+      if (selections.empty())
+	{
+	  std::vector<std::string> sorted = sort(map);
+	  if (sorted.size() == 1)
+	    {
+	      if (name == sorted[0])
+		{
+		  i = 0;
+		  map.clear();
+		  while (i < choices.size())
+		    {
+		      std::string tmp = choices[i]->getName();
+		      AC_TO_LOWER(tmp);
+		      putOrIncrement(map, tmp, choices[i]->getAddresses().size());
+		      i++;
+		    }
+		  std::vector<std::string> sorted2 = sort(map);
+		  i = 0;
+		  while (i < sorted2.size())
+		    {
+		      std::string tmp = format(sorted2[i], name);
+		      selections.push_back(tmp);
+		      if (i != 0)
+			std::cout << " ";
+		      std::cout << "{" << i + 1 << " : " << tmp << "}";
+		      i++;
+		    }
+		  std::cout << std::endl;
+		}
+	      else
+		{
+		  name = sorted[0];
+		  AC_TO_UPPER(name);
+		  complete(choices, name, address, first, selection);
+		  return ;
+		}
+	    }
+	  else if (sorted.size() > 1)
+	    {
+	      std::vector<std::string>::iterator	it = sorted.begin();
+	      std::vector<std::string>::iterator	it_end = sorted.end();
+	      int					j = 0;
+	      while (it != it_end && j < 5)
+		{
+		  if (j != 0)
+		    std::cout << " ";
+		  std::cout << "{" << *it << "}";
+		  j++;
+		  it++;
+		}
+	      std::cout << std::endl;
+	    }
+	}
+      else
+	{
+	  if (selection < 0 || (size_t)selection >= selections.size())
+	    no_address();
+	  std::string tmp = selections[selection];
+	  selections.clear();
+	  AC_TO_UPPER(tmp);
+	  name = tmp;
+	  while (choices.size() != 1)
+	    {
+	      std::string tmp = choices[0]->getName();
+	      AC_TO_UPPER(tmp);
+	      if (tmp != name)
+		removeAt(choices, 0);
+	      else
+		{
+		  tmp = choices[1]->getName();
+		  AC_TO_UPPER(tmp);
+		  if (tmp != name)
+		    removeAt(choices, 1);
+		}
+	    }
 	}
     }
+  if (choices.size() == 0)
+    no_address();
   if (choices.size() == 1)
     {
-      if (ttt)
-	offset = total.length();
-      ac::City *city = choices[0];
-      if (city->getAddresses().size() > 1)
-	{
-	  if (offset < total.length() && total[total.length() - 1] >= '1' && total[total.length() - 1] <= '5')
-	    {
-	      char c = total[total.length() - 1] - 1;
-	      while (city->getAddresses().size() != 1 && !city->getAddresses().empty())
-		{
-		  std::vector<std::string>::iterator it = city->getAddresses().begin();
-
-		  if (c == 48)
-		    city->getAddresses().erase(++it);
-		  else
-		    {
-		      c--;
-		      city->getAddresses().erase(it);
-		    }
-		}
-	      if (c != 48)
-		city->getAddresses().clear();
-	    }
-	  else if (offset < total.length())
-	    {
-	      j = 0;
-	      while (j < city->getAddresses().size())
-		{
-		  std::string tmp = city->getAddresses()[j];
-		  std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
-		  bool			ok = false;
-		  std::istringstream	iss(tmp);
-		  std::string		line;
-		  while (!ok && std::getline(iss, line, ' '))
-		    {
-		      i = 0;
-		      while (i + offset < total.length() && total[i + offset] == line[i])
-			i++;
-		      if (i + offset == total.length())
-			ok = true;
-		    }
-		  if (!ok)
-		    {
-		      std::vector<std::string>::iterator it = city->getAddresses().begin();
-		      std::vector<std::string>::iterator it_end = city->getAddresses().end();
-		      size_t	k = 0;
-		      while (k < j)
-			{
-			  it++;
-			  k++;
-			}
-		      city->getAddresses().erase(it);
-		      j--;
-		    }
-		  j++;
-		}
-	    }
-	}
-      if (city->getAddresses().size() == 1)
-	{
-	  std::cout << "=> " << city->getName() << ", " << city->getAddresses()[0] << std::endl;
-	  exit(0);
-	}
-      else if (city->getAddresses().empty())
-	{
-	  std::cerr << "Unknown address" << std::endl;
-	  exit(84);
-	}
+      first = false;
+      name = choices[0]->getName();
+      AC_TO_UPPER(name);
+      std::cout << "City : " << choices[0]->getName() << std::endl;
     }
-  else if (choices.empty())
-    {
-      std::cerr << "Unknown address" << std::endl;
-      exit(84);
-    }
-  i++;
+  (void)address;
+  (void)selection;
 }
 
 static void	run(ac::AutoCompletion &autoCompletion)
 {
   std::vector<ac::City *>	choices = autoCompletion.getCities();
-  std::string			total;
+  std::string			name;
+  std::string			address;
   std::string			line;
-  size_t			offset = 0;
+  bool				first = true;
+  int				selection = -1;
   while (true)
     {
-      /* TODO : Print possible values */
+      complete(choices, name, address, first, selection);
       if (!std::getline(std::cin, line))
 	return ;
-      std::transform(line.begin(), line.end(), line.begin(), ::tolower);
-      if (line == "abort")
+      AC_TO_UPPER(line);
+      if (line == "ABORT")
 	exit(0);
-      total.append(line);
-      remove(choices, total, offset);
+      selection = -1;
+      if (!line.empty() && line[0] > '0' && line[0] < '6')
+	selection = line[0] - 49;
+      else
+	(first ? name : address).append(line);
     }
 }
 

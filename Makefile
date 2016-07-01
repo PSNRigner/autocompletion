@@ -5,10 +5,10 @@
 ## Login   <frasse_l@epitech.net>
 ## 
 ## Started on  Thu Jun 30 09:03:28 2016 loic frasse-mathon
-## Last update Thu Jun 30 14:12:27 2016 loic frasse-mathon
+## Last update Fri Jul  1 09:08:18 2016 loic frasse-mathon
 ##
 
-NAME		= autocompletion
+NAME		= autoCompletion
 
 SRC		= src/main.cpp \
 		src/autocompletion.cpp
