@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Sat Jul  2 13:53:59 2016 loic frasse-mathon
+// Last update Sat Jul  2 22:07:58 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -53,6 +53,29 @@ static void	no_address()
   exit(84);
 }
 
+static bool	checkName(const std::string &name)
+{
+  if (name.empty())
+    return false;
+  char	c = '0';
+  while (c <= '9')
+    if (name.find(c++) != std::string::npos)
+      return false;
+  return true;
+}
+
+static bool	checkAddress(const std::string &address)
+{
+  std::vector<std::string>	split;
+  std::istringstream		iss(address);
+  std::string			tmp;
+  while (std::getline(iss, tmp, ' '))
+    split.push_back(tmp);
+  if (address.empty() || address[0] != ' ' || split.size() < 4 || !isNumber(split[1]) || !isStreetType(split[2]))
+    return false;
+  return true;
+}
+
 static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
 {
   std::ifstream	stream;
@@ -64,33 +87,16 @@ static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
 
   while (std::getline(stream, line))
     {
-      bool		before = true;
-      bool		ok = true;
-      size_t		i = 0;
-      std::string	name;
-      std::string       address;
-      while (i < line.length() && ok)
-	{
-	  if (line[i] == ',' && before)
-	    before = false;
-	  else if (line[i] == ',')
-	    ok = false;
-	  else if (before)
-	    name.push_back(line[i]);
-	  else
-	    address.push_back(line[i]);
-	  i++;
-	}
       std::vector<std::string>	split;
-      std::istringstream	iss(address);
+      std::istringstream	iss(line);
       std::string		tmp;
-      while (std::getline(iss, tmp, ' '))
+      while (std::getline(iss, tmp, ','))
 	split.push_back(tmp);
-      if (!ok || name.empty() || address.empty() || address[0] != ' ' || split.size() < 4 || !isNumber(split[1])
-	  || !isStreetType(split[2]))
+      
+      if (split.size() != 2 || !checkName(split[0]) || !checkAddress(split[1]))
 	std::cerr << line << std::endl;
       else
-	autoCompletion.addAddress(name, address.substr(1, address.length() - 1));
+	autoCompletion.addAddress(split[0], split[1].substr(1, split[1].length() - 1));
     }
   stream.close();
 }
