@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Fri Jul  1 17:25:37 2016 loic frasse-mathon
+// Last update Sat Jul  2 13:53:59 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -92,6 +92,7 @@ static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
       else
 	autoCompletion.addAddress(name, address.substr(1, address.length() - 1));
     }
+  stream.close();
 }
 
 template<typename T>
@@ -288,6 +289,69 @@ static std::string	next(const std::string &name, const std::string &line)
   return sub;
 }
 
+static bool	isLowerCase(const std::string &string)
+{
+  size_t	i = 0;
+
+  while (i < string.length())
+    {
+      if (string[i] >= 'A' && string[i] <= 'Z')
+	return false;
+      i++;
+    }
+  return true;
+}
+
+static void	format2(std::vector<std::string> &choices, const std::string &name, bool format1)
+{
+  if (format1)
+    {
+      size_t				i = 0;
+      while (i < choices.size())
+	{
+	  choices[i] = format(choices[i], name);
+	  i++;
+	}
+    }
+  if (choices.size() < 2)
+    return ;
+  std::string				first = choices[0];
+  std::vector<std::string>		split;
+  std::istringstream			iss(first);
+  std::string				tmp;
+  while (std::getline(iss, tmp, ' '))
+    split.push_back(tmp);
+  std::vector<std::string>::iterator	it = split.begin();
+  std::vector<std::string>::iterator	it_end = split.end();
+  while (it != it_end)
+    {
+      std::vector<std::string>::iterator	it2 = choices.begin();
+      std::vector<std::string>::iterator	it2_end = choices.end();
+      bool					ok = true;
+      size_t					ret;
+      while (ok && it2 != it2_end)
+	{
+	  if ((ret = it2->find(*it)) == std::string::npos || !isLowerCase(*it) || (ret != 0 && (*it2)[ret - 1] != ' ') || (ret + it->length() != it2->length() && (*it2)[ret + it->length()] != ' '))
+	    ok = false;
+	  it2++;
+	}
+      if (ok)
+	{
+	  it2 = choices.begin();
+	  it2_end = choices.end();
+	  tmp = *it;
+	  AC_TO_UPPER(tmp);
+	  while (it2 != it2_end)
+	    {
+	      ret = it2->find(*it);
+	      it2->replace(ret, tmp.length(), tmp);
+	      it2++;
+	    }
+	}
+      it++;
+    }
+}
+
 static void	complete(std::vector<ac::City *> &choices, std::string &name, std::string &address, bool &first,
 			 int selection)
 {
@@ -339,9 +403,10 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 		    }
 		  std::vector<std::string> sorted2 = sort(map, true);
 		  i = 0;
+		  format2(sorted2, name, true);
 		  while (i < sorted2.size())
 		    {
-		      std::string tmp = format(sorted2[i], name);
+		      std::string tmp = sorted2[i];
 		      selections.push_back(tmp);
 		      if (i != 0)
 			std::cout << " ";
@@ -360,6 +425,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	    }
 	  else if (sorted.size() > 1)
 	    {
+	      format2(sorted, name, false);
 	      std::vector<std::string>::iterator	it = sorted.begin();
 	      std::vector<std::string>::iterator	it_end = sorted.end();
 	      int					j = 0;
@@ -451,9 +517,10 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 			}
 		      std::vector<std::string> sorted2 = sort(map, false);
 		      i = 0;
+		      format2(sorted2, address, true);
 		      while (i < sorted2.size())
 			{
-			  std::string tmp = format(sorted2[i], address);
+			  std::string tmp = sorted2[i];
 			  selections.push_back(tmp);
 			  if (i != 0)
 			    std::cout << " ";
@@ -472,6 +539,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 		}
 	      else if (sorted.size() > 1)
 		{
+		  format2(sorted, address, false);
 		  std::vector<std::string>::iterator	it = sorted.begin();
 		  std::vector<std::string>::iterator	it_end = sorted.end();
 		  int					j = 0;
