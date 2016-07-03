@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Sat Jul  2 22:07:58 2016 loic frasse-mathon
+// Last update Sun Jul  3 10:47:06 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -95,6 +95,90 @@ static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
       
       if (split.size() != 2 || !checkName(split[0]) || !checkAddress(split[1]))
 	std::cerr << line << std::endl;
+      else
+	autoCompletion.addAddress(split[0], split[1].substr(1, split[1].length() - 1));
+    }
+  stream.close();
+}
+
+static bool	checkComma(std::vector<std::string> &old)
+{
+  if (old.size() != 1)
+    return false;
+  std::istringstream		iss(old[0]);
+  std::string			tmp;
+  std::vector<std::string>	split;
+  std::vector<std::string>	args;
+  while (std::getline(iss, tmp, ' '))
+    split.push_back(tmp);
+  size_t		i = 1;
+  while (i < split.size() - 2)
+    {
+      if (isNumber(split[i]))
+	{
+	  args.clear();
+	  size_t	j = 0;
+	  while (j < split.size())
+	    {
+	      if (j < i)
+		{
+		  if (args.empty())
+		    args.push_back(split[j]);
+		  else
+		    {
+		      args[0].append(" ");
+		      args[0].append(split[j]);
+		    }
+		}
+	      else if (args.size() > 0)
+		{
+		  if (args.size() == 1)
+		    {
+		      args.push_back(" ");
+		      args[1].append(split[j]);
+		    }
+		  else
+		    {
+		      args[1].append(" ");
+		      args[1].append(split[j]);
+		    }
+		}
+	      j++;
+	    }
+	}
+      i++;
+    }
+  if (args.size() == 2 && checkName(args[0]) && checkAddress(args[1]))
+    {
+      old = args;
+      return true;
+    }
+  return false;
+}
+
+static void	add_dictionary2(ac::AutoCompletion &autoCompletion, char *path)
+{
+  std::ifstream	stream;
+  std::string	line;
+
+  stream.open(path);
+  if (!stream)
+    bad_arg();
+
+  while (std::getline(stream, line))
+    {
+      std::vector<std::string>	split;
+      std::istringstream	iss(line);
+      std::string		tmp;
+      while (std::getline(iss, tmp, ','))
+	split.push_back(tmp);
+      
+      if (split.size() != 2 || !checkName(split[0]) || !checkAddress(split[1]))
+	{
+	  std::cerr << line << std::endl;
+	  if (checkComma(split))
+	    autoCompletion.addAddress(split[0], split[1].substr(1, split[1].length() - 1));
+	}
       else
 	autoCompletion.addAddress(split[0], split[1].substr(1, split[1].length() - 1));
     }
@@ -622,6 +706,7 @@ int			main(int ac, char **av)
 {
   ac::AutoCompletion	autoCompletion;
   int			i;
+  bool			correct = true;
 
   i = 1;
   if (ac == 1)
@@ -630,9 +715,14 @@ int			main(int ac, char **av)
     {
       if (std::string("-h") == av[i])
 	usage();
-      if (i != 1)
+      if ((correct && i != 1) || (!correct && i != 2))
 	bad_arg();
-      add_dictionary(autoCompletion, av[i]);
+      if (std::string("-c") == av[i])
+	correct = false;
+      else if (correct)
+	add_dictionary2(autoCompletion, av[i]);
+      else
+	add_dictionary(autoCompletion, av[i]);
       i++;
     }
   run(autoCompletion);
