@@ -5,7 +5,7 @@
 ** Login   <frasse_l@epitech.net>
 ** 
 ** Started on  Thu Jun 30 09:16:21 2016 loic frasse-mathon
-// Last update Fri Jul  1 09:47:49 2016 loic frasse-mathon
+// Last update Sun Jul  3 11:55:01 2016 loic frasse-mathon
 */
 
 #ifndef AUTOCOMPLETION_HH_
@@ -20,8 +20,8 @@
 # include <cstdlib>
 # include <algorithm>
 
-# define	AC_TO_UPPER(str)	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-# define	AC_TO_LOWER(str)	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+# define	AC_TO_UPPER(str)	std::transform(str.begin(), str.end(), str.begin(), ::toupper)
+# define	AC_TO_LOWER(str)	std::transform(str.begin(), str.end(), str.begin(), ::tolower)
 
 namespace	ac
 {

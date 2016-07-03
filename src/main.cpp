@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Sun Jul  3 10:47:06 2016 loic frasse-mathon
+// Last update Sun Jul  3 11:21:44 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -41,13 +41,13 @@ static void	usage()
   exit(0);
 }
 
-static void	bad_arg()
+static void	badArg()
 {
   std::cerr << "Invalid argument" << std::endl;
   exit(84);
 }
 
-static void	no_address()
+static void	noAddress()
 {
   std::cerr << "Unknown address" << std::endl;
   exit(84);
@@ -76,14 +76,14 @@ static bool	checkAddress(const std::string &address)
   return true;
 }
 
-static void	add_dictionary(ac::AutoCompletion &autoCompletion, char *path)
+static void	addToDict(ac::AutoCompletion &autoCompletion, char *path)
 {
   std::ifstream	stream;
   std::string	line;
 
   stream.open(path);
   if (!stream)
-    bad_arg();
+    badArg();
 
   while (std::getline(stream, line))
     {
@@ -156,14 +156,14 @@ static bool	checkComma(std::vector<std::string> &old)
   return false;
 }
 
-static void	add_dictionary2(ac::AutoCompletion &autoCompletion, char *path)
+static void	addToDict2(ac::AutoCompletion &autoCompletion, char *path)
 {
   std::ifstream	stream;
   std::string	line;
 
   stream.open(path);
   if (!stream)
-    bad_arg();
+    badArg();
 
   while (std::getline(stream, line))
     {
@@ -232,14 +232,14 @@ static void	putOrIncrement(std::map<std::string, int> &map, const std::string &k
   map.insert(std::pair<std::string, int>(key, count));
 }
 
-static bool	_sort(std::pair<std::string, int> pair1, std::pair<std::string, int> pair2)
+static bool	sortCities(std::pair<std::string, int> pair1, std::pair<std::string, int> pair2)
 {
   if (pair1.second == pair2.second)
     return pair1.first < pair2.first;
   return pair1.second > pair2.second;
 }
 
-static bool	_sort_addresses(std::pair<std::string, int> pair1, std::pair<std::string, int> pair2)
+static bool	sortAddresses(std::pair<std::string, int> pair1, std::pair<std::string, int> pair2)
 {
   if (pair1.second == pair2.second)
     {
@@ -275,7 +275,7 @@ static std::vector<std::string>			sort(const std::map<std::string, int> map, boo
       list.push_back(std::pair<std::string, int>(it->first, it->second));
       it++;
     }
-  std::sort(list.begin(), list.end(), first ? _sort : _sort_addresses);
+  std::sort(list.begin(), list.end(), first ? sortCities : sortAddresses);
   std::vector<std::pair<std::string, int> >::const_iterator	it2 = list.begin();
   std::vector<std::pair<std::string, int> >::const_iterator	it2_end = list.end();
   while (it2 != it2_end)
@@ -286,7 +286,7 @@ static std::vector<std::string>			sort(const std::map<std::string, int> map, boo
   return sorted;
 }
 
-static bool		my_find(const std::string &string, const std::string &substring, size_t &start, size_t &end)
+static bool		myFind(const std::string &string, const std::string &substring, size_t &start, size_t &end)
 {
   size_t		i;
   size_t		j;
@@ -330,7 +330,7 @@ static std::string	format(const std::string &string, const std::string &name)
   size_t		length;
   AC_TO_LOWER(tmp);
   AC_TO_LOWER(tmp2);
-  while (my_find(tmp, tmp2, index, length))
+  while (myFind(tmp, tmp2, index, length))
     {
       while (index < length)
 	{
@@ -462,7 +462,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	  std::string		line;
 	  while (std::getline(iss, line, ' '))
 	    {
-	      if (my_find(line, name, index, end) && index == 0)
+	      if (myFind(line, name, index, end) && index == 0)
 		{
 		  ok = true;
 		  putOrIncrement(map, next(name, line), choices[i]->getAddresses().size());
@@ -533,7 +533,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
       else
 	{
 	  if (selection < 0 || (size_t)selection >= selections.size())
-	    no_address();
+	    noAddress();
 	  std::string tmp = selections[selection];
 	  selections.clear();
 	  AC_TO_UPPER(tmp);
@@ -555,7 +555,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	}
     }
   if (choices.size() == 0)
-    no_address();
+    noAddress();
   if (choices.size() == 1)
     {
       first = false;
@@ -575,7 +575,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	      int			j = 0;
 	      while (std::getline(iss, line, ' '))
 		{
-		  if (j > 1 && my_find(line, address, index, end) && index == 0)
+		  if (j > 1 && myFind(line, address, index, end) && index == 0)
 		    {
 		      ok = true;
 		      putOrIncrement(map, next(address, line), 1);
@@ -647,7 +647,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	  else
 	    {
 	      if (selection < 0 || (size_t)selection >= selections.size())
-		no_address();
+		noAddress();
 	      std::string tmp = selections[selection];
 	      selections.clear();
 	      AC_TO_UPPER(tmp);
@@ -669,7 +669,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	    }
 	}
       if (choices[0]->getAddresses().size() == 0)
-	no_address();
+	noAddress();
       if (choices[0]->getAddresses().size() == 1)
 	{
 	  std::cout << "=> " << choices[0]->getName() << ", " << choices[0]->getAddresses()[0] << std::endl;
@@ -710,19 +710,19 @@ int			main(int ac, char **av)
 
   i = 1;
   if (ac == 1)
-    bad_arg();
+    badArg();
   while (i < ac)
     {
       if (std::string("-h") == av[i])
 	usage();
       if ((correct && i != 1) || (!correct && i != 2))
-	bad_arg();
+	badArg();
       if (std::string("-c") == av[i])
 	correct = false;
       else if (correct)
-	add_dictionary2(autoCompletion, av[i]);
+	addToDict2(autoCompletion, av[i]);
       else
-	add_dictionary(autoCompletion, av[i]);
+	addToDict(autoCompletion, av[i]);
       i++;
     }
   run(autoCompletion);
