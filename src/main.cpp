@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Sun Jul  3 11:21:44 2016 loic frasse-mathon
+// Last update Tue Jul  5 10:34:26 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -101,6 +101,25 @@ static void	addToDict(ac::AutoCompletion &autoCompletion, char *path)
   stream.close();
 }
 
+static bool	checkInverted(std::vector<std::string> &old)
+{
+  if (old.size() != 2)
+    return false;
+  std::string	name = old[0];
+  std::string	address = old[1];
+  if (address.length() == 0 || address[0] != ' ')
+    return false;
+  name = std::string(" ") + name;
+  address = address.substr(1, address.length() - 1);
+  if (checkName(address) && checkAddress(name))
+    {
+      old[0] = address;
+      old[1] = name;
+      return true;
+    }
+  return false;
+}
+
 static bool	checkComma(std::vector<std::string> &old)
 {
   if (old.size() != 1)
@@ -176,7 +195,7 @@ static void	addToDict2(ac::AutoCompletion &autoCompletion, char *path)
       if (split.size() != 2 || !checkName(split[0]) || !checkAddress(split[1]))
 	{
 	  std::cerr << line << std::endl;
-	  if (checkComma(split))
+	  if (checkComma(split) || checkInverted(split))
 	    autoCompletion.addAddress(split[0], split[1].substr(1, split[1].length() - 1));
 	}
       else
