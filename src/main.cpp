@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Wed Jul  6 15:21:57 2016 loic frasse-mathon
+// Last update Wed Jul  6 16:16:06 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -175,6 +175,54 @@ static bool	checkComma(std::vector<std::string> &old)
   return false;
 }
 
+static bool	checkStreetType(std::vector<std::string> &old)
+{
+  if (old.size() != 2 || checkAddress(old[1]))
+    return false;
+  std::vector<std::string>	split;
+  std::istringstream		iss(old[1]);
+  std::string			tmp;
+  while (std::getline(iss, tmp, ' '))
+    split.push_back(tmp);
+  if (split.size() < 4)
+    return false;
+  if (!isStreetType(split[2]))
+    {
+      size_t	i = 1;
+      while (i < split.size())
+	{
+	  if (isStreetType(split[i]))
+	    {
+	      std::string tmp;
+	      size_t	j = 0;
+	      size_t	k = 0;
+	      while (j < split.size())
+		{
+		  if (j != i && !split[j].empty())
+		    {
+		      tmp += " ";
+		      tmp += split[j];
+		      k++;
+		      if (k == 1)
+			{
+			  tmp += " ";
+			  tmp += split[i];
+			}
+		    }
+		  j++;
+		}
+	      if (checkAddress(tmp))
+		{
+		  old[1] = tmp;
+		  return true;
+		}
+	    }
+	  i++;
+	}
+    }
+  return false;
+}
+
 static bool	checkNumber(std::vector<std::string> &old)
 {
   if (old.size() != 2 || checkAddress(old[1]))
@@ -184,6 +232,8 @@ static bool	checkNumber(std::vector<std::string> &old)
   std::string                   tmp;
   while (std::getline(iss, tmp, ' '))
     split.push_back(tmp);
+  if (split.size() < 2)
+    return false;
   if (!isNumber(split[1]))
     {
       size_t	i = 2;
@@ -235,7 +285,7 @@ static void	addToDict2(ac::AutoCompletion &autoCompletion, char *path)
       if (split.size() != 2 || !checkName(split[0]) || !checkAddress(split[1]))
 	{
 	  std::cerr << line << std::endl;
-	  if (checkComma(split) || checkInverted(split) || checkNumber(split))
+	  if (checkComma(split) || checkInverted(split) || checkNumber(split) || checkStreetType(split))
 	    autoCompletion.addAddress(split[0], split[1].substr(1, split[1].length() - 1));
 	}
       else
