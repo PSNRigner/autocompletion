@@ -5,7 +5,7 @@
 // Login   <frasse_l@epitech.net>
 // 
 // Started on  Thu Jun 30 09:16:46 2016 loic frasse-mathon
-// Last update Tue Jul  5 10:34:26 2016 loic frasse-mathon
+// Last update Wed Jul  6 10:41:54 2016 loic frasse-mathon
 //
 
 #include "autocompletion.hh"
@@ -534,16 +534,58 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 	    }
 	  else if (sorted.size() > 1)
 	    {
+	      selections.clear();
 	      format2(sorted, name, false);
 	      std::vector<std::string>::iterator	it = sorted.begin();
 	      std::vector<std::string>::iterator	it_end = sorted.end();
+	      while (it != it_end)
+		{
+		  bool			ok = false;
+		  std::string		tmp;
+		  std::istringstream	iss(*it);
+		  while (!ok && std::getline(iss, tmp, ' '))
+		    if (tmp == name)
+		      ok = true;
+		  if (ok)
+		    selections.push_back(*it);
+		  it++;
+		}
+	      it = selections.empty() ? sorted.begin() : selections.begin();
+	      it_end = selections.empty() ? sorted.end() : selections.end();
 	      int					j = 0;
 	      while (it != it_end && j < 5)
 		{
 		  if (j != 0)
 		    std::cout << " ";
-		  std::cout << "{" << *it << "}";
-		  j++;
+		  if (selections.empty())
+		    {
+		      std::cout << "{" << *it << "}";
+		      j++;
+		    }
+		  else
+		    {
+		      size_t	i = 0;
+		      while (i < choices.size())
+			{
+			  std::string		tmp;
+			  std::istringstream	iss(choices[i]->getName());
+			  bool			ok = false;
+			  while (!ok && std::getline(iss, tmp, ' '))
+			    {
+			      AC_TO_UPPER(tmp);
+			      if (tmp == *it)
+				ok = true;
+			    }
+			  if (ok)
+			    {
+			      if (j != 0)
+				std::cout << " ";
+			      std::cout << "{" << j + 1 << " : " << format(choices[0]->getName(), name) << "}";
+			      j++;
+			    }
+			  i++;
+			}
+		    }
 		  it++;
 		}
 	      std::cout << std::endl;
@@ -608,7 +650,7 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 		}
 	      i++;
 	    }
-	  if (selections.empty())
+	  if (selections.empty() || selection == -1)
 	    {
 	      std::vector<std::string> sorted = sort(map, true);
 	      if (sorted.size() == 1)
@@ -648,16 +690,58 @@ static void	complete(std::vector<ac::City *> &choices, std::string &name, std::s
 		}
 	      else if (sorted.size() > 1)
 		{
+		  selections.clear();
 		  format2(sorted, address, false);
 		  std::vector<std::string>::iterator	it = sorted.begin();
 		  std::vector<std::string>::iterator	it_end = sorted.end();
-		  int					j = 0;
+		  while (it != it_end)
+		    {
+		      bool			ok = false;
+		      std::string		tmp;
+		      std::istringstream	iss(*it);
+		      while (!ok && std::getline(iss, tmp, ' '))
+			if (tmp == address)
+			  ok = true;
+		      if (ok)
+			selections.push_back(*it);
+		      it++;
+		    }
+		  it = selections.empty() ? sorted.begin() : selections.begin();
+		  it_end = selections.empty() ? sorted.end() : selections.end();
+		  int				j = 0;
 		  while (it != it_end && j < 5)
 		    {
 		      if (j != 0)
 			std::cout << " ";
-		      std::cout << "{" << name << ", " << *it << "}";
-		      j++;
+		      if (selections.empty())
+			{
+			  std::cout << "{" << name << ", " << *it << "}";
+			  j++;
+			}
+		      else
+			{
+			  size_t	i = 0;
+			  while (i < choices[0]->getAddresses().size())
+			    {
+			      std::string		tmp;
+			      std::istringstream	iss(choices[0]->getAddresses()[i]);
+			      bool			ok = false;
+			      while (!ok && std::getline(iss, tmp, ' '))
+				{
+				  AC_TO_UPPER(tmp);
+				  if (tmp == *it)
+				    ok = true;
+				}
+			      if (ok)
+				{
+				  if (j != 0)
+				    std::cout << " ";
+				  std::cout << "{" << j + 1 << " : " << name << ", " << format(choices[0]->getAddresses()[i], address) << "}";
+				  j++;
+				}
+			      i++;
+			    }
+			}
 		      it++;
 		    }
 		  std::cout << std::endl;
